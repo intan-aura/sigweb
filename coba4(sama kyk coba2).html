@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Lokasi Pembangunan TPI Bantul, DIY</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --ocean-blue: #1976d2;
+            --coastal-green: #2e7d32;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            padding: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120"><path d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.1)"/></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .map-container {
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .criteria-card {
+            border-left: 4px solid var(--primary-blue);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+        }
+        
+        .score-badge {
+            background: linear-gradient(135deg, var(--coastal-green) 0%, #4caf50 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+        }
+        
+        .location-marker {
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+        }
+        
+        .analysis-section {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .wave-divider {
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120"><path d="M0,0 C300,60 900,60 1200,0 L1200,120 L0,120 Z" fill="%23ffffff"/></svg>') no-repeat;
+            background-size: cover;
+            height: 60px;
+            margin: -1px 0;
+        }
+        
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn-ocean {
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--primary-blue) 100%);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-ocean:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(25,118,210,0.3);
+            color: white;
+        }
+        
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+            background: rgba(13,110,253,0.1);
+        }
+        
+        .progress-custom .progress-bar {
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--coastal-green) 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">
+                <i class="fas fa-fish me-2"></i>TPI Bantul Analyzer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#analisis">Analisis</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#peta">Peta Lokasi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#rekomendasi">Rekomendasi</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="container text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-map-marked-alt me-3"></i>
+                    Analisis Lokasi Pembangunan TPI
+                </h1>
+                <h2 class="h3 mb-4">Kabupaten Bantul, Daerah Istimewa Yogyakarta</h2>
+                <p class="lead mb-5">Studi komprehensif untuk menentukan lokasi optimal Tempat Pelelangan Ikan dengan pendekatan multi-kriteria dan analisis geospasial</p>
+                <button class="btn btn-light btn-lg px-5 rounded-pill" onclick="document.getElementById('analisis').scrollIntoView({behavior: 'smooth'})">
+                    <i class="fas fa-chart-line me-2"></i>Mulai Analisis
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="wave-divider"></div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <!-- Overview Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-water fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Garis Pantai</h5>
+                        <p class="card-text">±17 km pesisir selatan DIY</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Nelayan Aktif</h5>
+                        <p class="card-text">~2,500 nelayan tradisional</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-ship fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Kapal Nelayan</h5>
+                        <p class="card-text">~800 unit perahu/jukung</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-fish fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Produksi Ikan</h5>
+                        <p class="card-text">~1,200 ton/tahun</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <section id="peta" class="analysis-section">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center mb-4">
+                        <i class="fas fa-globe-asia me-2 text-primary"></i>
+                        Peta Analisis Lokasi TPI Bantul
+                    </h2>
+                    <div id="map" class="map-container"></div>
+                    <div class="mt-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="location-marker me-2">A</div>
+                                    <span>Pantai Parangtritis (Skor: 8.5/10)</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="location-marker me-2">B</div>
+                                    <span>Pantai Depok (Skor: 9.2/10)</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="location-marker me-2">C</div>
+                                    <span>Pantai Samas (Skor: 7.8/10)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section id="analisis" class="analysis-section">
+            <h2 class="text-center mb-5">
+                <i class="fas fa-analytics me-2 text-primary"></i>
+                Analisis Multi-Kriteria Lokasi TPI
+            </h2>
+            
+            <div class="row g-4">
+                <!-- Kriteria Aksesibilitas -->
+                <div class="col-lg-6">
+                    <div class="card criteria-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-road text-primary me-2"></i>
+                                Aksesibilitas (Bobot: 25%)
+                            </h5>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Jarak ke Jalan Utama</span>
+                                    <span class="score-badge">8.5</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Konektivitas Transportasi</span>
+                                    <span class="score-badge">7.8</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 78%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Akses ke Pasar</span>
+                                    <span class="score-badge">8.2</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 82%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kriteria Geografis -->
+                <div class="col-lg-6">
+                    <div class="card criteria-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-mountain text-success me-2"></i>
+                                Kondisi Geografis (Bobot: 20%)
+                            </h5>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Topografi Lahan</span>
+                                    <span class="score-badge">9.0</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Kondisi Pantai</span>
+                                    <span class="score-badge">8.7</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 87%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Kedalaman Perairan</span>
+                                    <span class="score-badge">8.3</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 83%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kriteria Sosial Ekonomi -->
+                <div class="col-lg-6">
+                    <div class="card criteria-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-users text-info me-2"></i>
+                                Sosial Ekonomi (Bobot: 20%)
+                            </h5>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Kepadatan Nelayan</span>
+                                    <span class="score-badge">9.1</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 91%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Dukungan Masyarakat</span>
+                                    <span class="score-badge">8.8</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Potensi Ekonomi</span>
+                                    <span class="score-badge">8.5</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kriteria Infrastruktur -->
+                <div class="col-lg-6">
+                    <div class="card criteria-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-tools text-warning me-2"></i>
+                                Infrastruktur (Bobot: 35%)
+                            </h5>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Ketersediaan Listrik</span>
+                                    <span class="score-badge">8.9</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 89%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Akses Air Bersih</span>
+                                    <span class="score-badge">7.6</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 76%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Fasilitas Pelabuhan</span>
+                                    <span class="score-badge">8.4</span>
+                                </div>
+                                <div class="progress progress-custom mt-2">
+                                    <div class="progress-bar" style="width: 84%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section id="rekomendasi" class="analysis-section">
+            <h2 class="text-center mb-5">
+                <i class="fas fa-lightbulb me-2 text-primary"></i>
+                Rekomendasi Pengembangan
+            </h2>
+            
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="display-1 text-warning mb-3">🥇</div>
+                            <h5 class="card-title">Lokasi Prioritas 1</h5>
+                            <h6 class="text-primary">Pantai Depok</h6>
+                            <p class="card-text">Skor tertinggi (9.2/10) dengan infrastruktur terbaik dan aksesibilitas optimal.</p>
+                            <div class="d-grid">
+                                <button class="btn btn-ocean" onclick="showLocationDetails('depok')">
+                                    <i class="fas fa-info-circle me-2"></i>Detail Lokasi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="display-1 text-secondary mb-3">🥈</div>
+                            <h5 class="card-title">Lokasi Prioritas 2</h5>
+                            <h6 class="text-primary">Pantai Parangtritis</h6>
+                            <p class="card-text">Skor tinggi (8.5/10) dengan potensi wisata yang dapat terintegrasi.</p>
+                            <div class="d-grid">
+                                <button class="btn btn-ocean" onclick="showLocationDetails('parangtritis')">
+                                    <i class="fas fa-info-circle me-2"></i>Detail Lokasi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="display-1 text-warning mb-3">🥉</div>
+                            <h5 class="card-title">Lokasi Prioritas 3</h5>
+                            <h6 class="text-primary">Pantai Samas</h6>
+                            <p class="card-text">Skor baik (7.8/10) cocok untuk pengembangan jangka panjang.</p>
+                            <div class="d-grid">
+                                <button class="btn btn-ocean" onclick="showLocationDetails('samas')">
+                                    <i class="fas fa-info-circle me-2"></i>Detail Lokasi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Plan -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-tasks me-2"></i>
+                                Rencana Tindak Lanjut
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Fase 1: Persiapan (3-6 bulan)</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Survey detail teknis lokasi</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Studi kelayakan mendalam</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Konsultasi publik dengan nelayan</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Pengurusan izin dan perizinan</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Fase 2: Implementasi (12-18 bulan)</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Pembangunan infrastruktur utama</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Instalasi fasilitas pendukung</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Pelatihan manajemen TPI</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Soft opening dan evaluasi</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-fish me-2"></i>TPI Bantul Analyzer</h5>
+                    <p class="mb-0">Analisis komprehensif untuk pembangunan TPI berkelanjutan</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">© 2025 Analisis Lokasi TPI Bantul, DIY</p>
+                    <small>Dikembangkan untuk kemajuan sektor perikanan</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal for Location Details -->
+    <div class="modal fade" id="locationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Detail Lokasi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([-8.0241, 110.3408], 11);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add markers for potential TPI locations
+        const locations = [
+            {
+                name: 'Pantai Parangtritis',
+                coords: [-8.0254, 110.3279],
+                score: 8.5,
+                marker: 'A',
+                color: '#ff6b35'
+            },
+            {
+                name: 'Pantai Depok',
+                coords: [-8.0156, 110.3089],
+                score: 9.2,
+                marker: 'B',
+                color: '#28a745'
+            },
+            {
+                name: 'Pantai Samas',
+                coords: [-8.0389, 110.2756],
+                score: 7.8,
+                marker: 'C',
+                color: '#ffc107'
+            }
+        ];
+
+        locations.forEach(location => {
+            const customIcon = L.divIcon({
+                html: `<div style="background-color: ${location.color}; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">${location.marker}</div>`,
+                className: 'custom-marker',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            L.marker(location.coords, { icon: customIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="text-center">
+                        <h6>${location.name}</h6>
+                        <p class="mb-2">Skor Kelayakan: <strong>${location.score}/10</strong></p>
+                        <button class="btn btn-sm btn-primary" onclick="showLocationDetails('${location.name.toLowerCase().replace(/\s+/g, '')}')">
+                            Detail Lokasi
+                        </button>
+                    </div>
+                `);
+        });
+
+        // Add coastal line
+        const coastalLine = [
+            [-8.0400, 110.2700],
+            [-8.0350, 110.2800],
+            [-8.0300, 110.2900],
+            [-8.0250, 110.3000],
+            [-8.0200, 110.3100],
+            [-8.0150, 110.3200],
+            [-8.0100, 110.3300],
+            [-8.0080, 110.3400]
+        ];
+
+        L.polyline(coastalLine, {
+            color: '#1976d2',
+            weight: 4,
+            opacity: 0.7
+        }).addTo(map).bindPopup('Garis Pantai Bantul (~17 km)');
+
+        // Function to show location details
+        function showLocationDetails(location) {
+            const modal = new bootstrap.Modal(document.getElementById('locationModal'));
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            let content = '';
+            
+            switch(location) {
+                case 'depok':
+                case 'pantaidepok':
+                    modalTitle.textContent = 'Pantai Depok - Lokasi Prioritas 1';
+                    content = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Keunggulan:</h6>
+                                <ul>
+                                    <li>Infrastruktur jalan yang baik</li>
+                                    <li>Dekat dengan pusat kota Bantul</li>
+                                    <li>Komunitas nelayan yang terorganisir</li>
+                                    <li>Akses listrik dan air bersih tersedia</li>
+                                    <li>Potensi integrasi dengan wisata kuliner</li>
+                                </ul>
+                                <h6 class="text-warning mt-3">Tantangan:</h6>
+                                <ul>
+                                    <li>Perlu koordinasi dengan sektor pariwisata</li>
+                                    <li>Kemungkinan konflik lahan</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">Spesifikasi Teknis:</h6>
+                                <table class="table table-sm">
+                                    <tr><td>Luas Area</td><td>±2.5 Ha</td></tr>
+                                    <tr><td>Jarak ke Jalan Utama</td><td>500m</td></tr>
+                                    <tr><td>Kedalaman Perairan</td><td>3-5 meter</td></tr>
+                                    <tr><td>Estimasi Biaya</td><td>Rp 8.5 M</td></tr>
+                                </table>
+                                <div class="mt-3">
+                                    <div class="text-center">
+                                        <div class="display-4 text-success">9.2</div>
+                                        <small class="text-muted">Skor Kelayakan Total</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'parangtritis':
+                case 'pantaiparangtritis':
+                    modalTitle.textContent = 'Pantai Parangtritis - Lokasi Prioritas 2';
+                    content = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Keunggulan:</h6>
+                                <ul>
+                                    <li>Sudah dikenal sebagai destinasi wisata</li>
+                                    <li>Fasilitas umum relatif lengkap</li>
+                                    <li>Akses transportasi yang baik</li>
+                                    <li>Potensi sinergi dengan sektor pariwisata</li>
+                                    <li>Dukungan pemerintah daerah kuat</li>
+                                </ul>
+                                <h6 class="text-warning mt-3">Tantangan:</h6>
+                                <ul>
+                                    <li>Kompetisi ruang dengan aktivitas wisata</li>
+                                    <li>Harga lahan relatif tinggi</li>
+                                    <li>Perlu manajemen terintegrasi</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">Spesifikasi Teknis:</h6>
+                                <table class="table table-sm">
+                                    <tr><td>Luas Area</td><td>±3.0 Ha</td></tr>
+                                    <tr><td>Jarak ke Jalan Utama</td><td>200m</td></tr>
+                                    <tr><td>Kedalaman Perairan</td><td>4-6 meter</td></tr>
+                                    <tr><td>Estimasi Biaya</td><td>Rp 10.2 M</td></tr>
+                                </table>
+                                <div class="mt-3">
+                                    <div class="text-center">
+                                        <div class="display-4 text-info">8.5</div>
+                                        <small class="text-muted">Skor Kelayakan Total</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'samas':
+                case 'pantaisamas':
+                    modalTitle.textContent = 'Pantai Samas - Lokasi Prioritas 3';
+                    content = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Keunggulan:</h6>
+                                <ul>
+                                    <li>Area relatif luas dan terbuka</li>
+                                    <li>Harga lahan terjangkau</li>
+                                    <li>Potensi pengembangan masa depan</li>
+                                    <li>Lingkungan alami terjaga</li>
+                                    <li>Fleksibilitas desain tinggi</li>
+                                </ul>
+                                <h6 class="text-warning mt-3">Tantangan:</h6>
+                                <ul>
+                                    <li>Infrastruktur masih terbatas</li>
+                                    <li>Jarak ke pusat kota lebih jauh</li>
+                                    <li>Perlu investasi infrastruktur awal</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">Spesifikasi Teknis:</h6>
+                                <table class="table table-sm">
+                                    <tr><td>Luas Area</td><td>±4.0 Ha</td></tr>
+                                    <tr><td>Jarak ke Jalan Utama</td><td>1.2 km</td></tr>
+                                    <tr><td>Kedalaman Perairan</td><td>2-4 meter</td></tr>
+                                    <tr><td>Estimasi Biaya</td><td>Rp 6.8 M</td></tr>
+                                </table>
+                                <div class="mt-3">
+                                    <div class="text-center">
+                                        <div class="display-4 text-warning">7.8</div>
+                                        <small class="text-muted">Skor Kelayakan Total</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            modalBody.innerHTML = content;
+            modal.show();
+        }
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navbar
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'rgba(255,255,255,0.98)';
+            } else {
+                navbar.style.background = 'rgba(255,255,255,0.95)';
+            }
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+
+        // Add interactive chart data
+        const chartData = {
+            parangtritis: [8.2, 8.7, 8.8, 7.9],
+            depok: [8.5, 9.0, 9.1, 8.9],
+            samas: [7.0, 8.3, 8.5, 7.6]
+        };
+
+        // Export functionality
+        function exportAnalysis() {
+            const analysisData = {
+                title: 'Analisis Lokasi Pembangunan TPI Bantul',
+                date: new Date().toLocaleDateString('id-ID'),
+                locations: [
+                    { name: 'Pantai Depok', score: 9.2, priority: 1 },
+                    { name: 'Pantai Parangtritis', score: 8.5, priority: 2 },
+                    { name: 'Pantai Samas', score: 7.8, priority: 3 }
+                ],
+                criteria: {
+                    accessibility: 25,
+                    geography: 20,
+                    social_economy: 20,
+                    infrastructure: 35
+                }
+            };
+            
+            console.log('Analysis Data:', analysisData);
+            alert('Data analisis telah disiapkan untuk export. Lihat console untuk detail.');
+        }
+
+        // Add floating action button for export
+        const floatingBtn = document.createElement('div');
+        floatingBtn.innerHTML = `
+            <button class="btn btn-primary rounded-circle position-fixed" 
+                    style="bottom: 20px; right: 20px; width: 60px; height: 60px; z-index: 1000; box-shadow: 0 4px 20px rgba(13,110,253,0.3);"
+                    onclick="exportAnalysis()" title="Export Analisis">
+                <i class="fas fa-download"></i>
+            </button>
+        `;
+        document.body.appendChild(floatingBtn);
+
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Add real-time clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID');
+            const dateString = now.toLocaleDateString('id-ID', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Update if clock element exists
+            const clockElement = document.getElementById('realtime-clock');
+            if (clockElement) {
+                clockElement.innerHTML = `${dateString}<br><small>${timeString}</small>`;
+            }
+        }
+
+        // Add clock to footer
+        const footer = document.querySelector('footer .container .row');
+        if (footer) {
+            const clockDiv = document.createElement('div');
+            clockDiv.className = 'col-12 text-center mt-3 pt-3 border-top';
+            clockDiv.innerHTML = `
+                <div id="realtime-clock" class="text-light">
+                    <!-- Clock will be updated by JavaScript -->
+                </div>
+            `;
+            footer.appendChild(clockDiv);
+            
+            // Update clock every second
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            const loadTime = performance.now();
+            console.log(`Page loaded in ${Math.round(loadTime)} milliseconds`);
+            
+            // Show load time in development
+            if (window.location.hostname === 'localhost') {
+                const loadIndicator = document.createElement('div');
+                loadIndicator.className = 'alert alert-info position-fixed';
+                loadIndicator.style.cssText = 'top: 80px; right: 20px; z-index: 9999; font-size: 12px;';
+                loadIndicator.innerHTML = `Load time: ${Math.round(loadTime)}ms`;
+                document.body.appendChild(loadIndicator);
+                
+                setTimeout(() => loadIndicator.remove(), 3000);
+            }
+        });
+
+        console.log('TPI Bantul Analyzer initialized successfully!');
+    </script>
+</body>
+</html>

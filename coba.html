@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Analisis TPI Baru di Bantul DIY</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- AOS Animation Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #34a853;
+            --accent-color: #fbbc05;
+            --danger-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        .btn-custom {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 20px;
+            transition: all 0.3s;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-custom:hover {
+            background-color: #0d47a1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .navbar {
+            transition: all 0.4s;
+            padding: 15px 0;
+        }
+        
+        .navbar-scrolled {
+            padding: 8px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-color: rgba(255, 255, 255, 0.95) !important;
+        }
+        
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            min-height: 600px;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://cdn.medcom.id/dynamic/content/2021/04/18/1267035/nRyvZgThsY.jpg?w=1024') no-repeat center center;
+            background-size: cover;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .section-title {
+            position: relative;
+            margin-bottom: 40px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 70px;
+            height: 4px;
+            background-color: var(--primary-color);
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+        
+        .tourist-spot {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            height: 100%;
+        }
+        
+        .tourist-spot:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .spot-img {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .spot-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .tourist-spot:hover .spot-img img {
+            transform: scale(1.1);
+        }
+        
+        .spot-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.7));
+            display: flex;
+            align-items: flex-end;
+            padding: 15px;
+            color: white;
+        }
+        
+        .spot-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            position: relative;
+        }
+        
+        .spot-count {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .spot-body {
+            padding: 20px;
+        }
+        
+        .district-name {
+            display: inline-block;
+            padding: 5px 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--light-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 30px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+        
+        .feature-box:hover .feature-icon {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .counter-box {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        
+        .counter-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .counter-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .testimonial-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            position: relative;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .testimonial-img {
+            position: absolute;
+            top: -25px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .testimonial-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .testimonial-text {
+            margin-top: 30px;
+            font-style: italic;
+            position: relative;
+        }
+        
+        .testimonial-text::before {
+            content: '\201C';
+            font-size: 4rem;
+            position: absolute;
+            left: -20px;
+            top: -30px;
+            opacity: 0.1;
+            font-family: Georgia, serif;
+        }
+        
+        .contact-info {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        
+        .contact-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--light-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 60px 0 30px;
+            position: relative;
+        }
+        
+        .footer-links h5 {
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            margin-right: 10px;
+            transition: all 0.3s;
+        }
+        
+        .social-icons a:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+            margin-top: 40px;
+            text-align: center;
+            color: #ccc;
+        }
+        
+        /* Animation classes */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        
+        .fade-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .counter-box {
+                margin-bottom: 20px;
+            }
+            
+            .testimonial-card {
+                margin-bottom: 40px;
+            }
+        }
+        
+        /* Heatmap legend */
+        .heatmap-legend {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        
+        /* Panoramic view section */
+        .panorama-section {
+            height: 60vh;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+            background: url('https://jogjakeren.com/wp-content/uploads/2022/08/Hidden-Paradise-Air-Terjun-Sri-Gethuk-Gunungkidul-vecteezy.com_-scaled.jpg') no-repeat center center;
+            background-size: cover;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 60px 0;
+        }
+        
+        .panorama-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+        }
+        
+        .panorama-content {
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        
+        .panorama-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .panorama-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <span class="fw-bold text-primary">TPI</span> <span class="text-secondary">Bantul</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home"><i class="fas fa-home me-1"></i> Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#peta"><i class="fas fa-map-marked-alt me-1"></i> Peta</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#destinasi"><i class="fas fa-compass me-1"></i> Destinasi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#tentang"><i class="fas fa-info-circle me-1"></i> Tentang</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#kontak"><i class="fas fa-envelope me-1"></i> Kontak</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-custom" href="https://gunungkidulkab.go.id/"><i class="fas fa-search me-1"></i> Jelajahi</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-content" data-aos="fade-up">
+            <h1>Analisis TPI Baru di Bantul DIY</h1>
+            <p>Tempat Pelelangan Ikan di daerah Bantul, DIY</p>
+            <div class="mb-4">
+                <div class="badge bg-primary p-2 fs-6 mb-2">Intan Aura Putri</div>
+                <div class="badge bg-secondary p-2 fs-6">NIM: 23/519991/SV/23198S</div>
+            </div>
+            <a href="#peta" class="btn btn-custom btn-lg me-2"><i class="fas fa-map-marker-alt me-1"></i> Lihat Peta</a>
+            <a href="#destinasi" class="btn btn-outline-light btn-lg"><i class="fas fa-compass me-1"></i> Destinasi</a>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+                    <div class="counter-box" data-aos="fade-up" data-aos-delay="100">
+                        <i class="fas fa-map-marked-alt mb-3 text-primary fa-2x"></i>
+                        <div class="counter-number">100+</div>
+                        <h5>Destinasi Wisata</h5>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+                    <div class="counter-box" data-aos="fade-up" data-aos-delay="200">
+                        <i class="fas fa-umbrella-beach mb-3 text-primary fa-2x"></i>
+                        <div class="counter-number">70+</div>
+                        <h5>Pantai Eksotis</h5>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+                    <div class="counter-box" data-aos="fade-up" data-aos-delay="300">
+                        <i class="fas fa-mountain mb-3 text-primary fa-2x"></i>
+                        <div class="counter-number">18</div>
+                        <h5>Kecamatan</h5>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="counter-box" data-aos="fade-up" data-aos-delay="400">
+                        <i class="fas fa-hiking mb-3 text-primary fa-2x"></i>
+                        <div class="counter-number">500K+</div>
+                        <h5>Pengunjung/Tahun</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="peta" class="py-5">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Peta Persebaran Wisata</h2>
+            <div class="row">
+                <div class="col-lg-9">
+                    <div id="map" data-aos="fade-up">
+                        <!-- QGIS Map integration using iframe -->
+                        <iframe  style="border: none;" height="1500" width="1500" src="http://f286-2401-1700-16-efd-70d6-703d-6c67-8f6a.ngrok-free.app/mapstore/#/dashboard/44"></iframe>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Keunggulan Wisata Gunung Kidul</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="feature-box text-center p-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="feature-icon">
+                            <i class="fas fa-umbrella-beach"></i>
+                        </div>
+                        <h4>Pantai Eksotis</h4>
+                        <p class="text-muted">Menawarkan deretan pantai dengan pasir putih dan tebing karang yang mempesona di sepanjang pesisir selatan.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="feature-box text-center p-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="feature-icon">
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <h4>Goa Karst</h4>
+                        <p class="text-muted">Formasi Goa yang unik dengan aliran sungai bawah tanah dan stalaktit yang menakjubkan.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box text-center p-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="feature-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h4>Konservasi Alam</h4>
+                        <p class="text-muted">Kawasan konservasi yang mendukung kelestarian flora dan fauna endemik karst Gunung Sewu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Panorama Section -->
+    <section class="panorama-section">
+        <div class="panorama-overlay"></div>
+        <div class="panorama-content" data-aos="fade-up">
+            <h2>Keindahan Alam Gunung Kidul</h2>
+            <p>Rasakan pesona keindahan alam dan budaya yang mempesona di setiap sudut Kabupaten Gunung Kidul</p>
+            <a href="#destinasi" class="btn btn-custom btn-lg">Jelajahi Sekarang</a>
+        </div>
+    </section>
+
+    <!-- Destinations Section -->
+    <section id="destinasi" class="py-5">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Destinasi Wisata Populer</h2>
+            
+            <div class="row">
+                <!-- Kecamatan Girisubo -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="tourist-spot">
+                        <div class="spot-img">
+                            <img src="https://www.pesisir.net/wp-content/uploads/2021/03/Daya-Tarik-Pantai-Sadeng.jpg" alt="Wisata Girisubo">
+                            <div class="spot-overlay">
+                                <h5>Kecamatan Girisubo</h5>
+                            </div>
+                        </div>
+                        <div class="spot-header">
+                            <h5 class="mb-0">Wisata Kec. Girisubo</h5>
+                            <div class="spot-count">10</div>
+                        </div>
+                        <div class="spot-body">
+                            <span class="district-name"><i class="fas fa-map-marker-alt me-1"></i> Girisubo</span>
+                            <p>Kecamatan Girisubo menawarkan berbagai destinasi wisata alam yang memukau, terutama pantai-pantai yang terkenal dengan keindahan alamnya.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                
+                                <div class="text-muted"><i class="fas fa-star text-warning"></i> 4.8/5.0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Kecamatan Ponjong -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="tourist-spot">
+                        <div class="spot-img">
+                            <img src="https://getlost.id/wp-content/uploads/2023/04/Toni-Hermanto.jpg" alt="Wisata Ponjong">
+                            <div class="spot-overlay">
+                                <h5>Kecamatan Ponjong</h5>
+                            </div>
+                        </div>
+                        <div class="spot-header">
+                            <h5 class="mb-0">Wisata Kec. Ponjong</h5>
+                            <div class="spot-count">8</div>
+                        </div>
+                        <div class="spot-body">
+                            <span class="district-name"><i class="fas fa-map-marker-alt me-1"></i> Ponjong</span>
+                            <p>Kecamatan dengan jumlah objek wisata yang cukup banyak, mencakup goa, air terjun, dan pemandangan alam yang memukau serta kearifan lokal yang masih terjaga.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                
+                                <div class="text-muted"><i class="fas fa-star text-warning"></i> 4.9/5.0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Kecamatan Panggang -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="tourist-spot">
+                        <div class="spot-img">
+                            <img src="https://ksmtour.com/media/images/articles27/Pantai-Watu-Kodok-Gunung-Kidul-Yogyakarta.jpg" alt="Wisata Panggang">
+                            <div class="spot-overlay">
+                                <h5>Kecamatan Panggang</h5>
+                            </div>
+                        </div>
+                        <div class="spot-header">
+                            <h5 class="mb-0">Wisata Kec. Panggang</h5>
+                            <div class="spot-count">7</div>
+                        </div>
+                        <div class="spot-body">
+                            <span class="district-name"><i class="fas fa-map-marker-alt me-1"></i> Panggang</span>
+                            <p>Kecamatan Panggang menawarkan destinasi wisata yang tenang dan alami, cocok untuk mereka yang mencari ketenangan dan keindahan alam yang masih asri.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                
+                                <div class="text-muted"><i class="fas fa-star text-warning"></i> 4.5/5.0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="tentang" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Tentang Gunung Kidul</h2>
+            <div class="row">
+                <div class="col-lg-6 mb-4" data-aos="fade-right">
+                    <img src="https://i.pinimg.com/originals/63/f4/71/63f471a1829f5bc3dad399cef3d24051.jpg" alt="About Gunung Kidul" class="img-fluid rounded">
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <p class="lead">Gunung Kidul adalah salah satu kabupaten di Daerah Istimewa Yogyakarta yang terkenal dengan keindahan alamnya. Terletak di bagian selatan Yogyakarta, Gunung Kidul memiliki beragam destinasi wisata alam seperti pantai, goa, air terjun, dan bukit yang memukau.</p>
+                    <p>Kabupaten ini juga kaya akan budaya dan tradisi yang masih terjaga hingga saat ini. Dengan udara yang sejuk dan pemandangan yang menakjubkan, Gunung Kidul menjadi destinasi favorit bagi wisatawan lokal maupun mancanegara.</p>
+                    <a href="#destinasi" class="btn btn-custom mt-3"><i class="fas fa-compass me-1"></i> Jelajahi Destinasi</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="kontak" class="py-5">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Hubungi Kami</h2>
+            <div class="row">
+                <div class="col-lg-6 mb-4" data-aos="fade-right">
+                    <div class="contact-info">
+                        <h4 class="mb-4">Informasi Kontak</h4>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h6>Alamat</h6>
+                                <p class="text-muted mb-0">Jl. Raya Wonosari, Gunung Kidul, Yogyakarta</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div>
+                                <h6>Telepon</h6>
+                                <p class="text-muted mb-0">+62 123 4567 890</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h6>Email</h6>
+                                <p class="text-muted mb-0">info@wisatagunkid.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <form>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="Nama Lengkap" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" placeholder="Alamat Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="5" placeholder="Pesan Anda" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-custom w-100">Kirim Pesan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5 class="mb-4">Wisata Gunung Kidul</h5>
+                    <p class="text-muted">Menjelajahi keindahan alam dan budaya Gunung Kidul, Yogyakarta.</p>
+                </div>
+                <div class="col-lg-2 col-6 mb-4 mb-lg-0">
+                    <h5 class="mb-4">Tautan Cepat</h5>
+                    <ul class="footer-links">
+                        <li><a href="#home">Beranda</a></li>
+                        <li><a href="#peta">Peta</a></li>
+                        <li><a href="#destinasi">Destinasi</a></li>
+                        <li><a href="#tentang">Tentang</a></li>
+                        <li><a href="#kontak">Kontak</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5 class="mb-4">Berlangganan</h5>
+                    <form>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" placeholder="Alamat Email" required>
+                        </div>
+                        <button type="submit" class="btn btn-custom w-100">Berlangganan</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p class="mb-0">&copy; 2025 Wisata Gunung Kidul. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+        
+    <!-- AOS Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('navbar-scrolled');
+            } else {
+                navbar.classList.remove('navbar-scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis TPI Baru Bantul, DIY</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --ocean-blue: #0369a1;
+            --light-blue: #e0f2fe;
+            --fish-orange: #ea580c;
+            --success-green: #16a34a;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-blue) 0%, #f0f9ff 100%);
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--ocean-blue) 100%);
+            color: white;
+            padding: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><path d="M0,10 Q25,0 50,10 T100,10 V20 H0 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 200px 40px;
+            animation: wave 20s linear infinite;
+        }
+        
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 200px; }
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-left: 5px solid var(--ocean-blue);
+        }
+        
+        .location-card {
+            border-left: 5px solid var(--fish-orange);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .location-card:hover {
+            border-left-width: 10px;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+        }
+        
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+            background: #e2e8f0;
+        }
+        
+        .progress-bar-custom {
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--ocean-blue) 0%, var(--success-green) 100%);
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 25px;
+            padding: 12px 24px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--ocean-blue) 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .facility-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+        
+        .financial-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--ocean-blue) 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        #map {
+            height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .map-legend {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .custom-popup {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .popup-header {
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+            border-bottom: 2px solid var(--ocean-blue);
+            padding-bottom: 5px;
+        }
+        
+        .popup-score {
+            background: linear-gradient(135deg, var(--ocean-blue), var(--success-green));
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .btn-floating {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-floating:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-planning { background: #fef3c7; color: #92400e; }
+        .status-analysis { background: #dbeafe; color: #1e40af; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center position-relative">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-fish me-3"></i>
+                Analisis TPI Baru Bantul
+            </h1>
+            <p class="lead mb-4">Tempat Pelelangan Ikan Modern untuk Kemajuan Perikanan DIY</p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-center gap-4 text-center">
+                        <div>
+                            <h3 class="fw-bold">17 km</h3>
+                            <small>Garis Pantai</small>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold">1M+</h3>
+                            <small>Penduduk</small>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold">506 km²</h3>
+                            <small>Luas Wilayah</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <div class="container my-4">
+        <ul class="nav nav-pills justify-content-center" id="mainTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview">
+                    <i class="fas fa-chart-line me-2"></i>Overview
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="location-tab" data-bs-toggle="pill" data-bs-target="#location">
+                    <i class="fas fa-map-marker-alt me-2"></i>Lokasi
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="facility-tab" data-bs-toggle="pill" data-bs-target="#facility">
+                    <i class="fas fa-building me-2"></i>Fasilitas
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="financial-tab" data-bs-toggle="pill" data-bs-target="#financial">
+                    <i class="fas fa-calculator me-2"></i>Finansial
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="container">
+        <div class="tab-content" id="mainTabContent">
+            
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-4">
+                                <h4 class="card-title mb-3">
+                                    <i class="fas fa-info-circle text-primary me-2"></i>
+                                    Executive Summary
+                                </h4>
+                                <p class="card-text">Proyek pembangunan TPI baru di Bantul bertujuan meningkatkan infrastruktur perikanan dan mendukung ekonomi maritim DIY. Analisis kelayakan mencakup aspek teknis, ekonomis, dan sosial untuk memastikan keberlanjutan investasi.</p>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-bullseye text-warning me-2"></i>Tujuan Utama:</h6>
+                                        <ul class="list-unstyled ms-3">
+                                            <li><i class="fas fa-check text-success me-2"></i>Optimalisasi rantai pasok ikan</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Peningkatan kesejahteraan nelayan</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Modernisasi sistem pelelangan</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-calendar text-info me-2"></i>Timeline Proyek:</h6>
+                                        <div class="progress-item mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <small>Studi Kelayakan</small>
+                                                <span class="status-badge status-analysis">Sedang Berlangsung</span>
+                                            </div>
+                                        </div>
+                                        <div class="progress-item mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <small>Persiapan Pembangunan</small>
+                                                <span class="status-badge status-planning">Perencanaan</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="row">
+                    <div class="col-md-3 mb-4">
+                        <div class="card metric-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-ship fa-2x text-primary mb-3"></i>
+                                <h3 class="fw-bold text-primary">150+</h3>
+                                <p class="text-muted mb-0">Kapal Nelayan</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card metric-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x text-success mb-3"></i>
+                                <h3 class="fw-bold text-success">2,500+</h3>
+                                <p class="text-muted mb-0">Nelayan Aktif</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card metric-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-weight fa-2x text-warning mb-3"></i>
+                                <h3 class="fw-bold text-warning">500</h3>
+                                <p class="text-muted mb-0">Ton/Bulan</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card metric-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-money-bill-wave fa-2x text-danger mb-3"></i>
+                                <h3 class="fw-bold text-danger">45M</h3>
+                                <p class="text-muted mb-0">Investasi (Rp)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Analysis Tab -->
+            <div class="tab-pane fade" id="location">
+                <!-- Interactive Map -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-map me-2"></i>
+                                    Peta Lokasi Alternatif TPI Bantul
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="map"></div>
+                                <div class="map-legend">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Keterangan Lokasi
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="legend-item">
+                                                <div class="legend-color" style="background: #22c55e;"></div>
+                                                <span><strong>Pantai Depok</strong> - Score: 85/100 (Terpilih)</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <div class="legend-color" style="background: #3b82f6;"></div>
+                                                <span><strong>Pantai Samas</strong> - Score: 78/100</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="legend-item">
+                                                <div class="legend-color" style="background: #f59e0b;"></div>
+                                                <span><strong>Parangtritis</strong> - Score: 65/100</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <div class="legend-color" style="background: #ef4444;"></div>
+                                                <span><strong>Pantai Glagah</strong> - Score: 72/100</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-analytics me-2"></i>Analisis Perbandingan Lokasi</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="row g-0">
+                                    <div class="col-md-6 location-card p-4" onclick="selectLocation('depok'); focusOnLocation(-7.7889, 110.3269)">
+                                        <h6 class="fw-bold text-success">
+                                            <i class="fas fa-crown me-2"></i>Pantai Depok
+                                        </h6>
+                                        <p class="small text-muted mb-2">Ekspansi TPI existing dengan infrastruktur lengkap</p>
+                                        <div class="progress progress-custom mb-2">
+                                            <div class="progress-bar progress-bar-custom" style="width: 85%"></div>
+                                        </div>
+                                        <small class="text-muted">Score: 85/100</small>
+                                        <div class="mt-2">
+                                            <span class="badge bg-success">Terpilih</span>
+                                            <span class="badge bg-info">Infrastruktur Ada</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 location-card p-4" onclick="selectLocation('samas'); focusOnLocation(-7.8167, 110.2833)">
+                                        <h6 class="fw-bold">Pantai Samas</h6>
+                                        <p class="small text-muted mb-2">Lokasi strategis dengan akses jalan yang baik</p>
+                                        <div class="progress progress-custom mb-2">
+                                            <div class="progress-bar progress-bar-custom" style="width: 78%"></div>
+                                        </div>
+                                        <small class="text-muted">Score: 78/100</small>
+                                        <div class="mt-2">
+                                            <span class="badge bg-primary">Alternatif 1</span>
+                                            <span class="badge bg-warning">Wisata</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-0">
+                                    <div class="col-md-6 location-card p-4" onclick="selectLocation('parangtritis'); focusOnLocation(-7.8167, 110.3167)">
+                                        <h6 class="fw-bold">Parangtritis</h6>
+                                        <p class="small text-muted mb-2">Potensi wisata tinggi, tapi akses terbatas</p>
+                                        <div class="progress progress-custom mb-2">
+                                            <div class="progress-bar progress-bar-custom" style="width: 65%"></div>
+                                        </div>
+                                        <small class="text-muted">Score: 65/100</small>
+                                        <div class="mt-2">
+                                            <span class="badge bg-warning">Wisata Utama</span>
+                                            <span class="badge bg-danger">Akses Terbatas</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 location-card p-4" onclick="selectLocation('glagah'); focusOnLocation(-7.8500, 110.2167)">
+                                        <h6 class="fw-bold">Pantai Glagah</h6>
+                                        <p class="small text-muted mb-2">Area pengembangan baru dengan lahan luas</p>
+                                        <div class="progress progress-custom mb-2">
+                                            <div class="progress-bar progress-bar-custom" style="width: 72%"></div>
+                                        </div>
+                                        <small class="text-muted">Score: 72/100</small>
+                                        <div class="mt-2">
+                                            <span class="badge bg-info">Lahan Luas</span>
+                                            <span class="badge bg-secondary">Pengembangan</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-star me-2"></i>Lokasi Terpilih</h6>
+                            </div>
+                            <div class="card-body" id="selectedLocation">
+                                <div class="text-center">
+                                    <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                                    <h5 class="fw-bold">Pantai Depok</h5>
+                                    <p class="text-muted">Lokasi optimal berdasarkan analisis multi-kriteria</p>
+                                    <hr>
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <h6>Aksesibilitas</h6>
+                                            <div class="progress progress-custom">
+                                                <div class="progress-bar bg-success" style="width: 90%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6>Infrastruktur</h6>
+                                            <div class="progress progress-custom">
+                                                <div class="progress-bar bg-info" style="width: 85%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facility Tab -->
+            <div class="tab-pane fade" id="facility">
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Rencana Fasilitas TPI</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="text-center">
+                                            <div class="facility-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                                                <i class="fas fa-anchor"></i>
+                                            </div>
+                                            <h6 class="fw-bold">Dermaga Pendaratan</h6>
+                                            <p class="small text-muted">Kapasitas 50 kapal dengan sistem bongkar muat modern</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="text-center">
+                                            <div class="facility-icon" style="background: linear-gradient(135deg, #10b981, #047857);">
+                                                <i class="fas fa-gavel"></i>
+                                            </div>
+                                            <h6 class="fw-bold">Balai Lelang</h6>
+                                            <p class="small text-muted">Sistem lelang digital dengan kapasitas 200 peserta</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="text-center">
+                                            <div class="facility-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                                                <i class="fas fa-snowflake"></i>
+                                            </div>
+                                            <h6 class="fw-bold">Cold Storage</h6>
+                                            <p class="small text-muted">Kapasitas 100 ton dengan suhu -18°C hingga 4°C</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="text-center">
+                                            <div class="facility-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                                <i class="fas fa-industry"></i>
+                                            </div>
+                                            <h6 class="fw-bold">Ice Plant</h6>
+                                            <p class="small text-muted">Produksi es 10 ton/hari untuk kebutuhan nelayan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Fasilitas Utama</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-check-circle text-success me-2"></i>Dermaga 200m</span>
+                                        <small class="text-muted">Prioritas 1</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-check-circle text-success me-2"></i>Balai Lelang 500m²</span>
+                                        <small class="text-muted">Prioritas 1</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-check-circle text-success me-2"></i>Cold Storage 100 ton</span>
+                                        <small class="text-muted">Prioritas 1</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-clock text-warning me-2"></i>Area Pengolahan</span>
+                                        <small class="text-muted">Fase 2</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Fasilitas Pendukung</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-building text-info me-2"></i>Kantor Administrasi</span>
+                                        <small>200m²</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-car text-secondary me-2"></i>Area Parkir</span>
+                                        <small>100 kendaraan</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-utensils text-warning me-2"></i>Food Court</span>
+                                        <small>10 stan</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="fas fa-shield-alt text-danger me-2"></i>Pos Keamanan</span>
+                                        <small>24 jam</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Tab -->
+            <div class="tab-pane fade" id="financial">
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-money-bill-wave fa-2x text-primary mb-3"></i>
+                                <h4 class="fw-bold text-primary">Rp 45 M</h4>
+                                <p class="text-muted mb-0">Total Investasi</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-calendar-alt fa-2x text-success mb-3"></i>
+                                <h4 class="fw-bold text-success">8 Tahun</h4>
+                                <p class="text-muted mb-0">Payback Period</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-chart-line fa-2x text-warning mb-3"></i>
+                                <h4 class="fw-bold text-warning">15%</h4>
+                                <p class="text-muted mb-0">IRR</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Estimasi Biaya Investasi</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="financial-table">
+                                    <table class="table table-striped mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Komponen</th>
+                                                <th class="text-end">Biaya (Rp M)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Pembebasan Lahan</td>
+                                                <td class="text-end fw-bold">8.0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Infrastruktur Dasar</td>
+                                                <td class="text-end fw-bold">12.0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Bangunan Utama</td>
+                                                <td class="text-end fw-bold">15.0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Peralatan & Mesin</td>
+                                                <td class="text-end fw-bold">7.0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Utilities</td>
+                                                <td class="text-end fw-bold">3.0</td>
+                                            </tr>
+                                            <tr class="table-primary">
+                                                <td class="fw-bold">Total CAPEX</td>
+                                                <td class="text-end fw-bold">45.0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Charts -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Analisis Kelayakan Finansial</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Proyeksi Cash Flow (10 Tahun)</h6>
+                                        <canvas id="cashFlowChart" width="400" height="200"></canvas>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Break Even Analysis</h6>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span>Progress to Break Even</span>
+                                            <span class="fw-bold">62.5%</span>
+                                        </div>
+                                        <div class="progress progress-custom mb-3" style="height: 20px;">
+                                            <div class="progress-bar progress-bar-custom" style="width: 62.5%">
+                                                <span class="fw-bold">5/8 Tahun</span>
+                                            </div>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="border rounded p-3">
+                                                    <h6 class="text-primary fw-bold">NPV</h6>
+                                                    <p class="mb-0">Rp 12.5M</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="border rounded p-3">
+                                                    <h6 class="text-success fw-bold">IRR</h6>
+                                                    <p class="mb-0">15.2%</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="border rounded p-3">
+                                                    <h6 class="text-warning fw-bold">ROI</h6>
+                                                    <p class="mb-0">27.8%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-action">
+        <button class="btn btn-primary btn-floating" data-bs-toggle="modal" data-bs-target="#reportModal">
+            <i class="fas fa-download"></i>
+        </button>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-download me-2"></i>
+                        Download Laporan Analisis
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                    <h6>Laporan Lengkap PDF</h6>
+                                    <p class="small text-muted">Analisis komprehensif dengan grafik dan tabel</p>
+                                    <button class="btn btn-outline-danger" onclick="downloadReport('pdf')">
+                                        <i class="fas fa-download me-2"></i>Download PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+                                    <h6>Data Finansial Excel</h6>
+                                    <p class="small text-muted">Proyeksi keuangan dan analisis sensitifitas</p>
+                                    <button class="btn btn-outline-success" onclick="downloadReport('excel')">
+                                        <i class="fas fa-download me-2"></i>Download Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-powerpoint fa-3x text-warning mb-3"></i>
+                                    <h6>Presentasi PPT</h6>
+                                    <p class="small text-muted">Ringkasan eksekutif untuk stakeholder</p>
+                                    <button class="btn btn-outline-warning" onclick="downloadReport('ppt')">
+                                        <i class="fas fa-download me-2"></i>Download PPT
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-alt fa-3x text-info mb-3"></i>
+                                    <h6>Summary Report</h6>
+                                    <p class="small text-muted">Ringkasan hasil analisis dalam format Word</p>
+                                    <button class="btn btn-outline-info" onclick="downloadReport('word')">
+                                        <i class="fas fa-download me-2"></i>Download DOC
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="downloadAll()">
+                        <i class="fas fa-download me-2"></i>Download Semua
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    
+    <script>
+        // Initialize Map
+        let map;
+        let markers = {};
+        
+        function initMap() {
+            // Initialize map centered on Bantul coastline
+            map = L.map('map').setView([-7.8, 110.28], 11);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Location data with actual coordinates
+            const locations = [
+                {
+                    name: 'Pantai Depok',
+                    lat: -7.7889,
+                    lng: 110.3269,
+                    score: 85,
+                    color: '#22c55e',
+                    status: 'Terpilih',
+                    description: 'TPI existing dengan infrastruktur lengkap. Akses jalan baik, fasilitas pendukung tersedia.',
+                    facilities: ['Dermaga', 'Cold Storage', 'Balai Lelang', 'Akses Jalan']
+                },
+                {
+                    name: 'Pantai Samas',
+                    lat: -7.8167,
+                    lng: 110.2833,
+                    score: 78,
+                    color: '#3b82f6',
+                    status: 'Alternatif 1',
+                    description: 'Lokasi strategis dengan potensi wisata. Perlu pengembangan infrastruktur dasar.',
+                    facilities: ['Lahan Luas', 'Akses Turis', 'Parkir', 'Warung']
+                },
+                {
+                    name: 'Parangtritis',
+                    lat: -7.8167,
+                    lng: 110.3167,
+                    score: 65,
+                    color: '#f59e0b',
+                    status: 'Wisata Utama',
+                    description: 'Destinasi wisata utama Bantul. Akses terbatas untuk aktivitas perikanan komersial.',
+                    facilities: ['Wisata', 'Hotel', 'Restoran', 'Parkir Luas']
+                },
+                {
+                    name: 'Pantai Glagah',
+                    lat: -7.8500,
+                    lng: 110.2167,
+                    score: 72,
+                    color: '#ef4444',
+                    status: 'Pengembangan',
+                    description: 'Area pengembangan baru dengan lahan luas. Infrastruktur masih terbatas.',
+                    facilities: ['Lahan Luas', 'Potensi Besar', 'Akses Terbatas']
+                }
+            ];
+            
+            // Add markers for each location
+            locations.forEach(location => {
+                const marker = L.circleMarker([location.lat, location.lng], {
+                    radius: 15,
+                    fillColor: location.color,
+                    color: '#ffffff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+                
+                // Create popup content
+                const popupContent = `
+                    <div class="custom-popup">
+                        <div class="popup-header">${location.name}</div>
+                        <div class="mb-2">
+                            <span class="popup-score">Score: ${location.score}/100</span>
+                            <span class="badge bg-secondary ms-2">${location.status}</span>
+                        </div>
+                        <p class="small mb-2">${location.description}</p>
+                        <div class="mb-2">
+                            <strong>Fasilitas:</strong><br>
+                            ${location.facilities.map(f => `<span class="badge bg-light text-dark me-1">${f}</span>`).join('')}
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="selectLocation('${location.name.toLowerCase().replace(' ', '')}')">
+                            <i class="fas fa-info-circle me-1"></i>Detail
+                        </button>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent, {
+                    maxWidth: 300,
+                    className: 'custom-popup-container'
+                });
+                
+                // Store marker reference
+                markers[location.name.toLowerCase().replace(' ', '')] = marker;
+                
+                // Add click event
+                marker.on('click', () => {
+                    selectLocation(location.name.toLowerCase().replace(' ', ''));
+                });
+            });
+            
+            // Add scale control
+            L.control.scale().addTo(map);
+            
+            // Add custom legend
+            const legend = L.control({position: 'bottomleft'});
+            legend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'info legend');
+                div.innerHTML = `
+                    <div style="background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                        <h6 style="margin: 0 0 10px 0; font-weight: bold;">Lokasi TPI</h6>
+                        <div><span style="color: #22c55e;">●</span> Pantai Depok (85)</div>
+                        <div><span style="color: #3b82f6;">●</span> Pantai Samas (78)</div>
+                        <div><span style="color: #f59e0b;">●</span> Parangtritis (65)</div>
+                        <div><span style="color: #ef4444;">●</span> Pantai Glagah (72)</div>
+                    </div>
+                `;
+                return div;
+            };
+            legend.addTo(map);
+        }
+        
+        // Focus on specific location
+        function focusOnLocation(lat, lng) {
+            map.setView([lat, lng], 14);
+        }
+
+        // Location Selection Function
+        function selectLocation(location) {
+            const locations = {
+                'pantaidepok': {
+                    name: 'Pantai Depok',
+                    description: 'Lokasi optimal berdasarkan analisis multi-kriteria',
+                    accessibility: 90,
+                    infrastructure: 85,
+                    details: 'TPI existing dengan infrastruktur lengkap, akses jalan baik, dan fasilitas pendukung tersedia.'
+                },
+                'pantaisamas': {
+                    name: 'Pantai Samas',
+                    description: 'Lokasi strategis dengan akses jalan yang baik',
+                    accessibility: 80,
+                    infrastructure: 75,
+                    details: 'Lokasi strategis dengan potensi wisata, namun perlu pengembangan infrastruktur dasar.'
+                },
+                'parangtritis': {
+                    name: 'Parangtritis',
+                    description: 'Potensi wisata tinggi, tapi akses terbatas',
+                    accessibility: 60,
+                    infrastructure: 70,
+                    details: 'Destinasi wisata utama dengan akses terbatas untuk aktivitas perikanan komersial.'
+                },
+                'pantaiglagah': {
+                    name: 'Pantai Glagah',
+                    description: 'Area pengembangan baru dengan lahan luas',
+                    accessibility: 75,
+                    infrastructure: 68,
+                    details: 'Area pengembangan baru dengan lahan luas, namun infrastruktur masih terbatas.'
+                }
+            };
+
+            const selectedLoc = locations[location];
+            if (selectedLoc) {
+                document.getElementById('selectedLocation').innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="fw-bold">${selectedLoc.name}</h5>
+                        <p class="text-muted">${selectedLoc.description}</p>
+                        <div class="alert alert-info">
+                            <small>${selectedLoc.details}</small>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h6>Aksesibilitas</h6>
+                                <div class="progress progress-custom">
+                                    <div class="progress-bar bg-success" style="width: ${selectedLoc.accessibility}%"></div>
+                                </div>
+                                <small>${selectedLoc.accessibility}%</small>
+                            </div>
+                            <div class="col-6">
+                                <h6>Infrastruktur</h6>
+                                <div class="progress progress-custom">
+                                    <div class="progress-bar bg-info" style="width: ${selectedLoc.infrastructure}%"></div>
+                                </div>
+                                <small>${selectedLoc.infrastructure}%</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Open popup for selected marker
+                const markerKey = location.replace('pantai', '');
+                if (markers[markerKey]) {
+                    markers[markerKey].openPopup();
+                }
+            }
+        }
+
+        // Cash Flow Chart
+        const ctx = document.getElementById('cashFlowChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Tahun 1', 'Tahun 2', 'Tahun 3', 'Tahun 4', 'Tahun 5', 'Tahun 6', 'Tahun 7', 'Tahun 8', 'Tahun 9', 'Tahun 10'],
+                    datasets: [{
+                        label: 'Net Cash Flow (Rp M)',
+                        data: [-45, -42, -38, -32, -24, -14, -2, 12, 28, 47],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Cumulative Cash Flow (Rp M)',
+                        data: [-45, -87, -125, -157, -181, -195, -197, -185, -157, -110],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Download Functions
+        function downloadReport(type) {
+            const messages = {
+                'pdf': 'Mengunduh Laporan PDF...',
+                'excel': 'Mengunduh Data Excel...',
+                'ppt': 'Mengunduh Presentasi PowerPoint...',
+                'word': 'Mengunduh Dokumen Word...'
+            };
+            
+            alert(messages[type] + '\n\nCatatan: Ini adalah demo. Dalam implementasi nyata, file akan diunduh otomatis.');
+        }
+
+        function downloadAll() {
+            alert('Mengunduh semua dokumen...\n\nCatatan: Ini adalah demo. Dalam implementasi nyata, semua file akan diunduh dalam format ZIP.');
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add animation to cards on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+
+        // Initialize map when location tab is shown
+        document.getElementById('location-tab').addEventListener('shown.bs.tab', function (e) {
+            if (!map) {
+                setTimeout(initMap, 100); // Small delay to ensure container is visible
+            } else {
+                map.invalidateSize(); // Refresh map if already initialized
+            }
+        });
+        
+        // Initialize map immediately if location tab is active on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('location-tab').classList.contains('active')) {
+                setTimeout(initMap, 100);
+            }
+        });
+
+        // Auto-refresh data simulation
+        setInterval(() => {
+            // Simulate real-time data updates
+            const metrics = document.querySelectorAll('.metric-card h3');
+            metrics.forEach(metric => {
+                if (metric.textContent.includes('+')) {
+                    const currentValue = parseInt(metric.textContent.replace(/\D/g, ''));
+                    const newValue = currentValue + Math.floor(Math.random() * 5);
+                    metric.textContent = metric.textContent.replace(currentValue.toString(), newValue.toString());
+                }
+            });
+        }, 30000); // Update every 30 seconds
+
+        // Print functionality
+        function printReport() {
+            window.print();
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                printReport();
+            }
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                document.getElementById('reportModal').modal('show');
+            }
+        });
+    </script>
+</body>
+</html>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Proyeksi Operasional (5 Tahun)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="financial-table">
+                                    <table class="table table-striped mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th class="text-end">Tahun 1</th>
+                                                <th class="text-end">Tahun 5</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Volume Ikan (ton)</td>
+                                                <td class="text-end">3,600</td>
+                                                <td class="text-end">6,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Pendapatan (Rp M)</td>
+                                                <td class="text-end">4.5</td>
+                                                <td class="text-end">8.5</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Biaya Operasi (Rp M)</td>
+                                                <td class="text-end">2.8</td>
+                                                <td class="text-end">4.2</td>
+                                            </tr>
+                                            <tr class="table-success">
+                                                <td class="fw-bold">Net Profit (Rp M)</td>
+                                                <td class="text-end fw-bold">1.7</td>
+                                                <td class="text-end fw-bold">4.3</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
